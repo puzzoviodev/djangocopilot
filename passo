@@ -1,0 +1,232 @@
+ Baixar e descompactar o projeto
+
+Baixe o arquivo django_static2dynamic_all6_pages.zip desta conversa.
+Crie uma pasta de trabalho no seu disco:
+
+Windows: C:\projetos\django_heatmap\
+macOS/Linux: ~/Projetos/django_heatmap/
+
+
+Descompacte o ZIP dentro dessa pasta.
+Ao final, você deve ter algo assim:
+
+C:\projetos\django_heatmap\
+└─ django_static2dynamic_skeleton\
+   ├─ manage.py
+   ├─ project\
+   ├─ core\
+   ├─ templates\
+   ├─ static\
+   └─ README.md
+
+
+Dica: o diretório raiz do projeto é django_static2dynamic_skeleton. É ele que vamos abrir no PyCharm.
+
+
+2) Abrir no PyCharm
+
+Abra o PyCharm.
+Vá em File > Open… e selecione a pasta django_static2dynamic_skeleton.
+Se aparecer a mensagem de “Untrusted project”, clique em Trust.
+Aguarde o index terminar (PyCharm vai analisar o projeto).
+
+
+3) Configurar o interpretador Python (venv)
+Opção A — Criar venv pelo PyCharm (recomendado)
+
+Vá em File > Settings… > Project: … > Python Interpreter.
+No canto superior direito, clique em ⚙ > Add….
+Escolha Virtualenv Environment > New.
+Em Base interpreter, selecione seu Python 3.x (ex.: Python 3.10/3.11).
+Em Location, deixe algo como:
+…/django_static2dynamic_skeleton/.venv
+Clique em OK e aguarde criar o ambiente.
+
+
+Terminal do PyCharm: depois que você define o interpretador do projeto, o Terminal integrado já abre com sua venv ativa por padrão (você verá o prefixo (.venv) no prompt).
+
+Opção B — Já tem uma venv pronta?
+
+Basta apontar o Python Interpreter para a sua venv existente (Settings > Project > Python Interpreter > Add > Existing environment).
+
+4) Instalar as dependências
+No Terminal do PyCharm (aba “Terminal”, no rodapé):
+
+pip install django pandas openpyxl xlrd
+
+Se o pip não for reconhecido, use:
+python -m pip install django pandas openpyxl xlrd
+
+5) Criar o banco (migrations)
+
+python manage.py makemigrations
+python manage.py migrate
+
+Isso cria o db.sqlite3 na raiz do projeto.
+
+6) Importar seus dados (CSV/XLSX)
+
+O comando de importação aceita CSV ou XLSX com as colunas:
+
+Agrupador, Fonte, Ativo, Indicador, Formula, Definicao, Referencia,
+Valor, Classificacao, Faixa, Descricao
+
+
+6.1) Teste rápido com CSV de exemplo
+
+Agrupador,Fonte,Ativo,Indicador,Formula,Definicao,Referencia,Valor,Classificacao,Faixa,Descricao
+Financeiro,StatusInvest,VALE3,ROE,,Retorno sobre Patrimônio,,0.18,Ótimo,>15%,Teste
+Financeiro,StatusInvest,VALE3,ROIC,,Retorno sobre Capital Investido,,0.12,Muito Bom,>10%,Teste
+Operacional,StatusInvest,ITUB4,Margin EBITDA,,Margem EBITDA,,0.35,Bom,>25%,Teste
+Risco,StatusInvest,PETR4,Alavancagem,,Dívida Líquida/EBITDA,,2.1,Moderado,1-3x,Teste
+
+
+Observação:
+
+Para indicadores percentuais (ROE, ROIC, margens etc.), o front já multiplica por 100 e coloca % automaticamente.
+
+
+6.2) Rodar o importador
+
+Para CSV (padrão , e utf-8):
+
+python manage.py importar_dados --arquivo dados.csv
+
+Para Excel:
+
+
+python manage.py importar_dados --arquivo dados.xlsx
+
+O importador limpa a tabela e insere tudo de novo (facilita refazer testes).
+
+7) Rodar o servidor
+
+Você pode rodar de duas formas:
+Opção A — Pelo Terminal
+
+Acesse no navegador:
+
+http://127.0.0.1:8000/page/hf04_filter_modal/
+http://127.0.0.1:8000/page/hf07_filter_quickstats/
+http://127.0.0.1:8000/page/hm01_basic/
+
+
+Opção B — Criar uma configuração de Run/Debug no PyCharm
+
+Clique no menu superior em Run > Edit Configurations….
+Clique em + (Add New Configuration):
+
+Se for PyCharm Professional: escolha Django server
+
+Em Host: 127.0.0.1
+Em Port: 8000
+Em Settings ele detecta project.settings automaticamente.
+Clique em OK e depois Run.
+
+
+Se for PyCharm Community: escolha Python
+
+Script path: …/django_static2dynamic_skeleton/manage.py
+Parameters: runserver
+Working directory: a pasta django_static2dynamic_skeleton
+Python interpreter: selecione a venv do projeto
+Environment variables: (opcional) DJANGO_SETTINGS_MODULE=project.settings (o manage.py já define isso, então não é obrigatório).
+Run.
+
+) Conferir as páginas
+Depois do servidor subir, abra:
+
+
+Modal com detalhes
+http://127.0.0.1:8000/page/hf04_filter_modal/
+
+
+QuickStats + cards
+http://127.0.0.1:8000/page/hf07_filter_quickstats/
+
+
+Heatmap básico por Ativo
+http://127.0.0.1:8000/page/hm01_basic/
+
+
+Você também pode abrir as demais (já prontas):
+
+/page/ex2_cards_grid_from_excel/
+/page/hf01_filter_togglecard/
+/page/hf02_filter_button_details/
+
+
+Se você importou o CSV de exemplo, já deve ver cards/tile aparecendo.
+Se a página carregar vazia, é porque não há dados — rode o import novamente e atualize a página.
+
+
+9) (Opcional) Acessar o admin
+Se quiser navegar pelos dados via Django Admin:
+
+python manage.py createsuperuser
+# informe usuário/senha
+
+
+Depois acesse: http://127.0.0.1:8000/admin/
+Modelo registrado: IndicatorRecord.
+
+
+10) Onde editar
+
+JS das páginas: static/js/pages/…
+
+hf04_filter_modal.js
+hf07_filter_quickstats.js
+hm01_basic.js
+
+
+Templates HTML: templates/user_pages/…
+Estilos: static/css/app.css
+API/Views: core/views.py
+Modelo: core/models.py
+Importador: core/management/commands/importar_dados.py
+
+
+O front (JS) consome GET /api/dataset. Se quiser mudar o shape ou filtrar no servidor, edite dataset_api em core/views.py.
+
+
+11) Erros comuns e soluções rápidas
+
+
+Django não está instalado
+Instale dependências na venv usada pelo projeto:
+pip install django pandas openpyxl xlrd
+
+
+No module named core
+Verifique se a Working directory da configuração de execução é a pasta do projeto (django_static2dynamic_skeleton) e rode pelo manage.py.
+
+
+Porta 8000 ocupada
+python manage.py runserver 8001 e acesse http://127.0.0.1:8001/...
+
+
+Importei CSV mas não aparece nada
+Confirme nomes de colunas e se a coluna Valor não ficou vazia/Não-numérica (o front aceita vazio, mas para QuickStats o Valor precisa ser numérico). Reimporte e atualize o navegador.
+
+
+Encoding em CSV
+Se seu CSV não estiver em UTF‑8:
+python manage.py importar_dados --arquivo dados.csv --encoding latin1
+
+
+Separador diferente de vírgula
+python manage.py importar_dados --arquivo dados.csv --sep ';'
+
+
+
+12) Dica PyCharm (desenvolvimento suaa-vez)
+
+O Terminal do PyCharm, quando a venv do projeto está selecionada, abre já com (.venv) ativo — instale e rode tudo por ali.
+O hot reload do Django recarrega o servidor quando você salva arquivos .py. Para alterações em JS/CSS, basta atualizar a página no navegador.
+
+
+Se quiser, posso colocar um db.sqlite3 já populado com seus dados e te devolver um novo ZIP — é só me mandar o seu CSV/XLSX.
+Quer também que eu crie uma configuração de Run/Debug já inclusa (arquivo .idea/runConfigurations) para você abrir e executar com um clique no PyCharm?
+
+
